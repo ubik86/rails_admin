@@ -25,7 +25,9 @@
   - if authorized? :new, config.abstract_model
     - path_hash = { :model_name => config.abstract_model.to_param }
     - path_hash.merge!({ :associations => { field.inverse_of => (@object.id || 'new') } }) if field.inverse_of
-    = link_to t('admin.actions.create').capitalize + ' ' + config.abstract_model.pretty_name.downcase, new_path(path_hash), :class => "createAssociatedRecord"
+    = link_to t('admin.actions.create').capitalize + ' ' + config.abstract_model.pretty_name.downcase, rails_admin_new_path(path_hash), :class => "createAssociatedRecord"
+- head_style 'rails_admin/ra.filtering-select.css'
+- head_javascript "rails_admin/ra.filtering-select.js"
 - head_javascript do
   $j(document).ready(function($){
   $("##{"#{field.dom_id}"}").filteringSelect({
@@ -33,7 +35,7 @@
     createQuery: function(query) {
     return { query: query }
     },
-    source: "#{list_path(config.abstract_model.to_param, :compact => true).html_safe}"
+    source: "#{rails_admin_list_path(config.abstract_model.to_param, :compact => true)}"
   });
   if($("div.createAssociatedRecordDialog").length == 0) {
   $(".#{"#{field.dom_id}"} .createAssociatedRecord").remoteForm({ dialogClass: "createAssociatedRecordDialog" });

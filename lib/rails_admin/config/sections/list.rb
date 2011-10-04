@@ -32,7 +32,7 @@ module RailsAdmin
             config.default_items_per_page = value
           end
         end
-
+        
         register_instance_option :filters do
           []
         end
@@ -43,7 +43,10 @@ module RailsAdmin
         end
 
         register_instance_option(:sort_by) do
-          parent.abstract_model.model.primary_key
+          # TODO
+          # Once composite-primary-keys branch is merged
+          # we should use parent.abstract_model.primary_keys.first as the default
+          :id
         end
 
         register_instance_option(:sort_reverse?) do

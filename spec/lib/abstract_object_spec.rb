@@ -21,7 +21,7 @@ describe "AbstractObject" do
 
     describe "a record without associations" do
       before do
-        object.set_attributes({ :name => name, :number => number, :position => position, :suspended => suspended, :team_id => nil })
+        object.attributes = { :name => name, :number => number, :position => position, :suspended => suspended, :team_id => nil }
       end
 
       it "should create a Player with given attributes" do
@@ -31,7 +31,7 @@ describe "AbstractObject" do
         player.name.should == name
         player.number.should == number
         player.position.should == position
-        player.suspended.should == false # protected
+        player.suspended.should == suspended
         player.draft.should == nil
         player.team.should == nil
       end
@@ -41,7 +41,7 @@ describe "AbstractObject" do
       let(:draft) { Factory :draft }
 
       before do
-        object.set_attributes({ :name => name, :number => number, :position => position, :suspended => suspended, :team_id => nil, :draft_id => draft.id })
+        object.attributes = { :name => name, :number => number, :position => position, :suspended => suspended, :team_id => nil, :draft_id => draft.id }
       end
 
       it "should create a Player with given attributes" do
@@ -51,7 +51,7 @@ describe "AbstractObject" do
         player.name.should == name
         player.number.should == number
         player.position.should == position
-        player.suspended.should == false # protected
+        player.suspended.should == suspended
         player.draft.should == draft.reload
         player.team.should == nil
       end
@@ -62,10 +62,10 @@ describe "AbstractObject" do
       let(:object) { RailsAdmin::AbstractObject.new league }
       let(:name) { "Awesome League" }
       let(:teams) { [Factory(:team)] }
-      let(:divisions) { [Division.create!(:name => 'div 1', :league => League.create!(:name => 'north')), Division.create!(:name => 'div 2', :league => League.create!(:name => 'south'))] }
+      let(:divisions) { [Factory(:division), Factory(:division)] }
 
       before do
-        object.set_attributes({ :name  => name, :division_ids => divisions.map(&:id) })
+        object.attributes = { :name  => name, :division_ids => divisions.map(&:id) }
       end
 
       it "should create a League with given attributes and associations" do
@@ -89,7 +89,7 @@ describe "AbstractObject" do
       let(:new_number) { player.number + 29 }
 
       before do
-        object.set_attributes({ :number => new_number, :team_id => new_team.id, :suspended => new_suspended, :draft_id => new_draft })
+        object.attributes = { :number => new_number, :team_id => new_team.id, :suspended => new_suspended, :draft_id => new_draft }
         object.save
       end
 
@@ -98,7 +98,7 @@ describe "AbstractObject" do
         object.number.should == new_number
         object.name.should == name
         object.draft.should == nil
-        object.suspended.should == true # protected
+        object.suspended.should == new_suspended
         object.team.should == new_team
       end
     end

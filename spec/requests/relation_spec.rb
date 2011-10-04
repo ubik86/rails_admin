@@ -13,8 +13,8 @@ describe 'table relations' do
   end
 
   describe 'column with non-nullable fk and no model validations' do
-    it 'should not be required' do
-      @fields.find{ |f| f.name == :division }.required?.should == false
+    it 'should be required' do
+      @fields.find{ |f| f.name == :division }.required?.should == true
     end
   end
 

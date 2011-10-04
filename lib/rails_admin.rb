@@ -8,6 +8,17 @@ require 'rails_admin/support/csv_converter'
 require 'rails_admin/support/core_extensions'
 
 module RailsAdmin
+  # Copy of initializer blocks for initialization
+  #
+  # @see RailsAdmin.setup
+  @initializers = []
+
+  # Whether or not the initializers have been run
+  #
+  # @see RailsAdmin.reset
+  # @see RailsAdmin.setup
+  @initialized = false
+
   def self.authenticate_with(&block)
     ActiveSupport::Deprecation.warn("'#{self.name}.authenticate_with { }' is deprecated, use 'RailsAdmin.config{|c| c.authenticate_with }' instead", caller)
     self.config {|c| c.authenticate_with(&block) }
@@ -45,7 +56,8 @@ module RailsAdmin
     if entity
       RailsAdmin::Config.model(entity, &block)
     elsif block_given?
-      block.call(RailsAdmin::Config)
+      @initializers << block
+      block.call(RailsAdmin::Config) if @initialized
     else
       RailsAdmin::Config
     end
@@ -54,5 +66,18 @@ module RailsAdmin
   # Reset RailsAdmin configuration to defaults
   def self.reset
     RailsAdmin::Config.reset
+    @initialized = false
+  end
+
+  # Apply all initializers stored on application startup
+  def self.setup
+    @initializers.each {|block| block.call(RailsAdmin::Config) } unless @initialized
+    @initialized = true
+  end
+
+  # Reset RailsAdmin including initializers
+  def self.test_reset!
+    self.reset
+    @initializers.clear
   end
 end

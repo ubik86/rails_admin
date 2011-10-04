@@ -4,17 +4,15 @@
 %ul.items
   %li
     = "#{@abstract_model.pretty_name}: "
-    = link_to show_path(:model_name => @abstract_model.to_param, :id => object.id) do
+    = link_to rails_admin_show_path(:model_name => @abstract_model.to_param, :id => object.id) do
       = model_config.with(:object => object).object_label
     %ul
       - @abstract_model.has_many_associations.each do |association|
-        - object.send(association[:name]).each do |child|
+        - object.send(association[:name]).reject{|child| child.nil?}.each do |child|
           %li
-            - child_config = RailsAdmin.config(child)
-            #{association[:pretty_name]}: #{link_to(child_config.with(:object => child).object_label, show_path(:model_name => child_config.abstract_model.to_param, :id => child.id))}
+            #{association[:pretty_name]}: #{link_to(RailsAdmin.config(child).with(:object => child).object_label, rails_admin_show_path(:model_name => association[:name].to_s.singularize.to_sym, :id => child.id))}
       - @abstract_model.has_one_associations.each do |association|
         - child = object.send(association[:name])
         - next if child.nil?
         %li
-          - child_config = RailsAdmin.config(child)
-          #{association[:pretty_name]}: #{link_to(child_config.with(:object => child).object_label, show_path(:model_name => child_config.abstract_model.to_param, :id => child.id))}
+          #{association[:pretty_name]}: #{link_to(RailsAdmin.config(child).with(:object => child).object_label, rails_admin_show_path(:model_name => association[:name], :id => child.id))}

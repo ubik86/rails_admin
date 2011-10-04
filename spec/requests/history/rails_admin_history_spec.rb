@@ -50,7 +50,7 @@ describe "RailsAdmin History" do
 
   describe "history ajax update" do
     it "shouldn't use the application layout" do
-      visit history_list_path(:ref => 0, :section => 4)
+      visit rails_admin_history_list_path(:ref => 0, :section => 4)
       page.should have_no_selector "h1#app_layout_warning"
     end
   end
@@ -80,7 +80,7 @@ describe "RailsAdmin History" do
 
     context "GET admin/history/@model" do
       before :each do
-        visit history_model_path(@model)
+        visit rails_admin_history_model_path(@model)
       end
 
       # https://github.com/sferik/rails_admin/issues/362
@@ -101,7 +101,7 @@ describe "RailsAdmin History" do
         end
 
         it "should render a XHR request successfully" do
-          xhr :get, history_model_path(@model, :page => 2)
+          xhr :get, rails_admin_history_model_path(@model, :page => 2)
         end
       end
     end

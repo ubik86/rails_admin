@@ -6,14 +6,14 @@ describe "RailsAdmin Basic List" do
 
   describe "GET /admin" do
     it "should respond successfully" do
-      visit dashboard_path
+      visit rails_admin_dashboard_path
     end
   end
 
   describe "GET /admin/player as list" do
     before(:each) do
       21.times { FactoryGirl.create :player } # two pages of players
-      visit list_path(:model_name => "player")
+      visit rails_admin_list_path(:model_name => "player")
     end
 
     it "should show \"Select model to edit\", should show filters and should show column headers" do
@@ -43,7 +43,7 @@ describe "RailsAdmin Basic List" do
   describe "GET /admin/player with sort" do
     before(:each) do
       @players = 2.times.map { FactoryGirl.create :player }
-      visit list_path(:model_name => "player", :sort => "name")
+      visit rails_admin_list_path(:model_name => "player", :sort => "name")
     end
 
     it "should be sorted correctly" do
@@ -55,7 +55,7 @@ describe "RailsAdmin Basic List" do
 
     before(:each) do
       @players = 2.times.map { FactoryGirl.create :player }
-      visit list_path(:model_name => "player", :sort => "name", :sort_reverse => "true")
+      visit rails_admin_list_path(:model_name => "player", :sort => "name", :sort_reverse => "true")
     end
 
     it "should be sorted correctly" do
@@ -77,7 +77,7 @@ describe "RailsAdmin Basic List" do
     end
 
     it "should allow to query on any attribute" do
-      visit list_path(:model_name => "player", :query => @players[0].name)
+      visit rails_admin_list_path(:model_name => "player", :query => @players[0].name)
       should have_content(@players[0].name)
       (1..3).each do |i|
         should have_no_content(@players[i].name)
@@ -85,7 +85,7 @@ describe "RailsAdmin Basic List" do
     end
 
     it "should allow to filter on one attribute" do
-      visit list_path(:model_name => "player", :filters => {:injured => {"1" => {:value => "true"}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:injured => {"1" => {:value => "true"}}})
       should have_content(@players[0].name)
       should have_no_content(@players[1].name)
       should have_content(@players[2].name)
@@ -93,7 +93,7 @@ describe "RailsAdmin Basic List" do
     end
 
     it "should allow to combine filters on two different attributes" do
-      visit list_path(:model_name => "player", :filters => {:retired => {"1" => {:value => "true"}}, :injured => {"1" => {:value => "true"}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:retired => {"1" => {:value => "true"}}, :injured => {"1" => {:value => "true"}}})
       should have_content(@players[0].name)
       (1..3).each do |i|
         should have_no_content(@players[i].name)
@@ -101,7 +101,7 @@ describe "RailsAdmin Basic List" do
     end
 
     it "should allow to filter on belongs_to relationships" do
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => { :value => @teams[0].name }}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => { :value => @teams[0].name }}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -117,7 +117,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :query => @players[0].name)
+      visit rails_admin_list_path(:model_name => "player", :query => @players[0].name)
       should have_no_content(@players[0].name)
     end
 
@@ -131,7 +131,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.id}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.id}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -149,7 +149,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -166,7 +166,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -183,7 +183,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -198,7 +198,7 @@ describe "RailsAdmin Basic List" do
           field :team
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -215,7 +215,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
@@ -232,27 +232,27 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}, "2" => {:value => @teams.first.id}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}, "2" => {:value => @teams.first.id}}})
       should have_content(@players[0].name)
       should have_content(@players[1].name)
       should have_no_content(@players[2].name)
       should have_no_content(@players[3].name)
       # same with a different id
-      visit list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}, "2" => {:value => @teams.last.id}}})
+      visit rails_admin_list_path(:model_name => "player", :filters => {:team => {"1" => {:value => @teams.first.name}, "2" => {:value => @teams.last.id}}})
       should have_no_content(@players[0].name)
       should have_no_content(@players[1].name)
       should have_no_content(@players[2].name)
       should have_no_content(@players[3].name)
     end
-
+    
     it "should display base filters when no filters are present in the params" do
       RailsAdmin.config Player do
         list do
           filters [:name, :team]
         end
       end
-
-      visit list_path(:model_name => "player")
+      
+      visit rails_admin_list_path(:model_name => "player")
       should have_content("$.filters.append('Name', 'name', 'string', '', '', '', 1);$.filters.append('Team', 'team', 'belongs_to_association', '', '', '', 2);")
     end
   end
@@ -260,7 +260,7 @@ describe "RailsAdmin Basic List" do
   describe "GET /admin/player with 2 objects" do
     before(:each) do
       @players = 2.times.map { FactoryGirl.create :player }
-      visit list_path(:model_name => "player")
+      visit rails_admin_list_path(:model_name => "player")
     end
 
     it "should show \"2 results\"" do
@@ -271,7 +271,7 @@ describe "RailsAdmin Basic List" do
   describe "GET /admin/player with 20 objects" do
     before(:each) do
       @players = 20.times.map { FactoryGirl.create :player }
-      visit list_path(:model_name => "player")
+      visit rails_admin_list_path(:model_name => "player")
     end
 
     it "should show \"20 results\"" do
@@ -283,7 +283,7 @@ describe "RailsAdmin Basic List" do
     before(:each) do
       items_per_page = RailsAdmin.config.default_items_per_page
       (items_per_page * 20).times { FactoryGirl.create(:player) }
-      visit list_path(:model_name => "player", :page => 8)
+      visit rails_admin_list_path(:model_name => "player", :page => 8)
     end
 
     it "should paginate correctly" do
@@ -295,7 +295,7 @@ describe "RailsAdmin Basic List" do
     before(:each) do
       items_per_page = RailsAdmin.config.default_items_per_page
       @players = (items_per_page * 20).times.map { FactoryGirl.create(:player) }
-      visit list_path(:model_name => "player", :page => 20)
+      visit rails_admin_list_path(:model_name => "player", :page => 20)
     end
 
     it "should paginate correctly and contain the right item" do
@@ -306,14 +306,14 @@ describe "RailsAdmin Basic List" do
   describe "GET /admin/player show all" do
     it "should respond successfully" do
       2.times.map { FactoryGirl.create :player }
-      visit list_path(:model_name => "player", :all => true)
+      visit rails_admin_list_path(:model_name => "player", :all => true)
     end
   end
 
   describe "list as compact json" do
     it "should have_content an array with 2 elements and contain an array of elements with keys id and label" do
       2.times.map { FactoryGirl.create :player }
-      response = page.driver.get(list_path(:model_name => "player", :compact => true, :format => :json))
+      response = page.driver.get(rails_admin_list_path(:model_name => "player", :compact => true, :format => :json))
       ActiveSupport::JSON.decode(response.body).length.should eql(2)
       ActiveSupport::JSON.decode(response.body).each do |object|
         object.should have_key("id")
@@ -336,7 +336,7 @@ describe "RailsAdmin Basic List" do
           list { field :name }
         end
       end
-      visit list_path(:model_name => "player", :query => player.name[2, -1])
+      visit rails_admin_list_path(:model_name => "player", :query => player.name[2, -1])
       should have_content(player.name)
     end
 
@@ -347,7 +347,7 @@ describe "RailsAdmin Basic List" do
           list { field :name }
         end
       end
-      visit list_path(:model_name => "player", :query => player.name[0, 2])
+      visit rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
       should have_no_content(player.name)
     end
 
@@ -359,7 +359,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :query => player.name[0, 2])
+      visit rails_admin_list_path(:model_name => "player", :query => player.name[0, 2])
       should have_content(player.name)
     end
 
@@ -371,7 +371,7 @@ describe "RailsAdmin Basic List" do
           end
         end
       end
-      visit list_path(:model_name => "player", :query => player.name[1..-1])
+      visit rails_admin_list_path(:model_name => "player", :query => player.name[1..-1])
       should have_no_content(player.name)
     end
   end
@@ -379,7 +379,7 @@ describe "RailsAdmin Basic List" do
   describe "list for objects with overridden to_param" do
     before(:each) do
       @ball = FactoryGirl.create :ball
-      visit list_path(:model_name => "ball")
+      visit rails_admin_list_path(:model_name => "ball")
     end
 
     it "shows the show and delete links with valid url" do

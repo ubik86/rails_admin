@@ -14,7 +14,7 @@ describe "RailsAdmin Config DSL" do
     it "should be hidden from navigation" do
       # Make query in team's edit view to make sure loading
       # the related division model config will not mess the navigation
-      visit new_path(:model_name => "team")
+      visit rails_admin_new_path(:model_name => "team")
       within("#nav") do
         excluded_models.each do |model|
           should have_no_selector("li a", :text => model.to_s)
@@ -23,17 +23,17 @@ describe "RailsAdmin Config DSL" do
     end
 
     it "should raise NotFound for the list view" do
-      visit list_path(:model_name => "fan")
+      visit rails_admin_list_path(:model_name => "fan")
       page.driver.status_code.should eql(404)
     end
 
     it "should raise NotFound for the create view" do
-      visit new_path(:model_name => "fan")
+      visit rails_admin_new_path(:model_name => "fan")
       page.driver.status_code.should eql(404)
     end
 
     it "should be hidden from other models relations in the edit view" do
-      visit new_path(:model_name => "team")
+      visit rails_admin_new_path(:model_name => "team")
       should_not have_selector("#team_division")
       should_not have_selector("input#team_fans")
     end
@@ -78,23 +78,23 @@ describe "RailsAdmin Config DSL" do
       RailsAdmin.config('League').with(:object => @league).object_label.should == "League '#{@league.name}'"
     end
   end
-
+  
   describe "compact_show_view" do
-
+    
     it 'should hide empty fields in show view by default' do
       @player = FactoryGirl.create :player
-      visit show_path(:model_name => "league", :id => @player.id)
+      visit rails_admin_show_path(:model_name => "league", :id => @player.id)
       should_not have_css("div.player_born_on")
     end
-
-
+    
+    
     it 'should be disactivable' do
       RailsAdmin.config do |c|
         c.compact_show_view = false
       end
 
       @player = FactoryGirl.create :player
-      visit show_path(:model_name => "player", :id => @player.id)
+      visit rails_admin_show_path(:model_name => "player", :id => @player.id)
       should have_css("div.player_born_on")
     end
   end

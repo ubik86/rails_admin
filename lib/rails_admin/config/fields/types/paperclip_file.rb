@@ -20,28 +20,13 @@ module RailsAdmin
           register_instance_option(:thumb_method) do
             nil
           end
-          
-          register_instance_option(:export_value) do
-            value.to_s
-          end
-          
-          # Reader for validation errors of the bound object
-          def errors
-            bindings[:object].errors["#{name}_file_name"] + bindings[:object].errors["#{name}_content_type"] + bindings[:object].errors["#{name}_file_size"]
-          end
-          
-          register_instance_option(:required?) do
-            @required ||= !!abstract_model.model.validators_on("#{name}_file_name").find do |v|
-              v.is_a?(ActiveModel::Validations::PresenceValidator) || !v.options[:allow_nil]
-            end
-          end
 
           register_instance_option(:pretty_value) do
             if (file = bindings[:object].send(method_name))
-              if file.file? && errors.blank?
+              if file.file?
                 url = file.url
                 v = bindings[:view]
-                if file.content_type =~ /image/ || file.to_s.split('.').last =~ /jpg|jpeg|png|gif/
+                if file.content_type =~ /image/
                   thumb_url = (self.thumb_method && file.url(self.thumb_method) || url)
                   (url != thumb_url) ? v.link_to(v.image_tag(thumb_url), url, :target => 'blank') : v.image_tag(thumb_url)
                 else

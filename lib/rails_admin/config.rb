@@ -30,8 +30,6 @@ module RailsAdmin
         end
       end
     end
-    
-    DEFAULT_ATTR_ACCESSIBLE_ROLE = Proc.new { :default }
 
     DEFAULT_AUTHORIZE = Proc.new {}
 
@@ -45,12 +43,8 @@ module RailsAdmin
         raise "See RailsAdmin::Config.current_user_method or setup Devise / Warden"
       end
     end
-  
 
     class << self
-      # Application title, can be an array of two elements
-      attr_accessor :main_app_name
-
       # Configuration option to specify which models you want to exclude.
       attr_accessor :excluded_models
 
@@ -64,6 +58,9 @@ module RailsAdmin
       # Fields to be hidden in show, create and update views
       attr_accessor :default_hidden_fields
 
+      # Fields to be hidden in export views
+      attr_accessor :default_hidden_fields_for_export
+
       # Default items per page value used if a model level option has not
       # been configured
       attr_accessor :default_items_per_page
@@ -73,13 +70,10 @@ module RailsAdmin
       # Configuration option to specify which method names will be searched for
       # to be used as a label for object records. This defaults to [:name, :title]
       attr_accessor :label_methods
-
+      
       # hide blank fields in show view if true
       attr_accessor :compact_show_view
-
-      # Set the max width of columns in list view before a new set is created
-      attr_accessor :total_columns_width
-
+      
       # Stores model configuration objects in a hash identified by model's class
       # name.
       #
@@ -113,13 +107,7 @@ module RailsAdmin
         @authenticate = blk if blk
         @authenticate || DEFAULT_AUTHENTICATION
       end
-      
-      
-      def attr_accessible_role(&blk)
-        @attr_accessible_role = blk if blk
-        @attr_accessible_role || DEFAULT_ATTR_ACCESSIBLE_ROLE
-      end
-      
+
       # Setup authorization to be run as a before filter
       # This is run inside the controller instance so you can setup any authorization you need to.
       #
@@ -197,11 +185,7 @@ module RailsAdmin
           raise ArgumentError, "Search operator '#{operator}' not supported"
         end
       end
-      
-      def reload_between_requests=(thingy)
-        ActiveSupport::Deprecation.warn("'#{self.name}.reload_between_requests=' is not in use any longer, please remove it from initialization files", caller)
-      end
-      
+
       # Shortcut to access the list section's class configuration
       # within a config DSL block
       #
@@ -268,13 +252,12 @@ module RailsAdmin
         @authorize = nil
         @current_user = nil
         @default_hidden_fields = [:id, :created_at, :created_on, :deleted_at, :updated_at, :updated_on, :deleted_on]
+        @default_hidden_fields_for_export = []
         @default_items_per_page = 20
         @default_search_operator = 'default'
         @excluded_models = []
         @included_models = []
-        @total_columns_width = 697
         @label_methods = [:name, :title]
-        @main_app_name = Proc.new { [Rails.application.engine_name.titleize.chomp(' Application'), 'Admin'] }
         @registry = {}
       end
 

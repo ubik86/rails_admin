@@ -5,16 +5,16 @@ module RailsAdmin
       # Defines a configuration for a field.
       def field(name, type = nil, &block)
         field = @fields.find {|f| name == f.name }
-
+        
         # some fields are hidden by default (belongs_to keys, has_many associations in list views.)
         # unhide them if config specifically defines them
         field.show if field.try(:hidden?)
-
+        
         # Specify field as virtual if type is not specifically set and field was not
         # found in default stack
         if field.nil? && type.nil?
-          field = (@fields << RailsAdmin::Config::Fields::Types.load(:string).new(self, name, {})).last
-
+          field = (@fields << RailsAdmin::Config::Fields::Types.load(:virtual).new(self, name, {})).last
+        
         # Register a custom field type if one is provided and it is different from
         # one found in default stack
         elsif !type.nil? && type != (field.nil? ? nil : field.type)
@@ -105,7 +105,7 @@ module RailsAdmin
 
       # Get all fields defined as visible.
       def visible_fields
-        fields.select {|f| f.with(bindings).visible? }.map{|f| f.with(bindings)}
+        fields.select {|f| f.visible? }
       end
     end
   end

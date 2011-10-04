@@ -43,7 +43,7 @@ module RailsAdmin
 
         # if properties that were gathered so far have the width
         # over 697 make a set for them
-        if partial_total + width >= RailsAdmin::Config.total_columns_width
+        if partial_total + width >= 697
           set << {:p => temp, :size => partial_total}
           partial_total = 0
           temp = []
@@ -71,7 +71,7 @@ module RailsAdmin
       max_sets = sets.size-2
       total = current_set.between?(1, max_sets) ?  704 : total
       column_offset = total-sets[current_set][:size]
-      per_property = properties.size != 0 ? column_offset / properties.size : 0
+      per_property = column_offset/properties.size
       offset = column_offset - per_property * properties.size
 
       properties.each do |property|

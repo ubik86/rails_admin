@@ -10,16 +10,16 @@ describe "RailsAdmin" do
       RailsAdmin.config do |config|
         config.authenticate_with {}
       end
-      visit dashboard_path
+      visit rails_admin_dashboard_path
     end
   end
-  
+
   # A common mistake for translators is to forget to change the YAML file's
   # root key from en to their own locale (as people tend to use the English
   # file as template for a new translation).
   describe "localization" do
     it "should default to English" do
-      visit dashboard_path
+      visit rails_admin_dashboard_path
 
       should have_content("Site administration")
       should have_content("Dashboard")
@@ -27,16 +27,22 @@ describe "RailsAdmin" do
   end
 
   describe "html head" do
-    before { visit dashboard_path }
+    before { visit rails_admin_dashboard_path }
 
-    # Note: the [href^="/asset... syntax matches the start of a value. The reason
+    # Note: the [href^="/sty... syntax matches the start of a value. The reason
     # we just do that is to avoid being confused by rails' asset_ids.
-    it "should load stylesheets in header" do
-      should have_selector('head link[href^="/assets/rails_admin/rails_admin.css"]')
+    it "should load stylesheets" do
+      should have_selector('link[href^="/stylesheets/rails_admin/ra.timeline.css"]')
     end
 
-    it "should load javascript files in body" do
-      should have_selector('body script[src^="/assets/rails_admin/rails_admin.js"]')
+    it "should load javascript files" do
+      scripts = %w[ /javascripts/rails_admin/application.js
+                //ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js
+                //ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js ]
+
+      scripts.each do |script|
+        should have_selector(%Q{script[src^="#{script}"]})
+      end
     end
   end
 
@@ -47,24 +53,23 @@ describe "RailsAdmin" do
     end
 
     it "should work like belongs to associations in the list view" do
-      visit list_path(:model_name => "comment", :set => "1")
+      visit rails_admin_list_path(:model_name => "comment", :set => "1")
 
       should have_content(@team.name)
     end
 
     it "should be editable" do
-      visit edit_path(:model_name => "comment", :id => @comment.id)
+      visit rails_admin_edit_path(:model_name => "comment", :id => @comment.id)
 
       should have_selector("legend", :text => "Commentable")
       should have_selector("select#comment_commentable_type")
       should have_selector("select#comment_commentable_id")
     end
 
-    it "should be visible in the owning end" do
-      visit edit_path(:model_name => "team", :id => @team.id)
+    it "should be hidden in the owning end" do
+      visit rails_admin_edit_path(:model_name => "team", :id => @team.id)
 
-      should have_selector("legend", :text => "Comments")
-      should have_selector("select#team_comment_ids")
+      should have_no_selector("legend", :text => "Comments")
     end
   end
 

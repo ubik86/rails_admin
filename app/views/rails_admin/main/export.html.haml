@@ -1,5 +1,7 @@
 - params = request.params.except(:action, :controller, :utf8, :page, :per_page, :format, :authenticity_token)
-- visible_fields = @model_config.export.with(:view => self, :object => @abstract_model.model.new).visible_fields
+- visible_fields = @model_config.export.visible_fields
+- head_javascript "rails_admin/application.js"
+- head_style "rails_admin/form.css"
 
 #block-tables.block
   = breadcrumbs_for :export, @abstract_model
@@ -9,7 +11,7 @@
     %h2.title= t('admin.export.select') # @page_name
     .inner
       = render(:partial => 'layouts/rails_admin/flash', :locals => {:flash => flash})
-      = form_tag export_path(params.merge(:all => true)), :method => 'post' do
+      = form_tag rails_admin_export_path(params.merge(:all => true)), :method => 'post' do
         %input{:name => "send_data", :type => "hidden", :value => "true"}/
         %fieldset
           %legend= t('admin.export.fields_from', :name => @abstract_model.pretty_name)
@@ -36,7 +38,7 @@
         - visible_fields.select{ |f| f.association? && !f.association[:polymorphic] }.each do |field|
           - association = field.association
           - associated_model = association[:type] == :belongs_to ? association[:parent_model] : association[:child_model]
-          - fields = RailsAdmin.config(associated_model).export.with(:view => self, :object => associated_model.new).visible_fields.select{ |f| !f.association? }
+          - fields = RailsAdmin.config(associated_model).export.visible_fields.select{ |f| !f.association? }
           %fieldset
             %legend= t('admin.export.fields_from_associated', :name => field.label)
             - fields.each do |associated_model_field|

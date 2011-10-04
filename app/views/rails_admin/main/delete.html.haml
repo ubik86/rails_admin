@@ -1,3 +1,5 @@
+- head_javascript "rails_admin/application.js"
+
 #block-tables.block
   = breadcrumbs_for :delete, @object
 
@@ -15,15 +17,15 @@
 
       %div{:style=>"padding-left:20px"}= render :partial => "delete_notice", :object => @object
 
-      = form_for(@object, :url => destroy_path(:model_name => @abstract_model.to_param, :id => @object.id), :html => {:method => "delete"}) do
+      = form_for(@object, :url => rails_admin_destroy_path(:model_name => @abstract_model.to_param, :id => @object.id), :html => {:method => "delete"}) do
 
         %br
         %br
         .group.navform.wat-cf
           %button.button{:type => "submit"}
-            = image_tag "rails_admin/theme/activo/images/icons/cross.png", :alt => t("admin.delete.confirmation")
+            %img{:alt => "Remove", :src => "/stylesheets/rails_admin/theme/activo/images/icons/cross.png"}
             = t("admin.delete.confirmation")
 
           %button.button{:type => "submit", :name => "_continue"}
-            = image_tag "rails_admin/theme/activo/images/icons/delete.png", :alt => t("admin.new.cancel")
+            = image_tag "/stylesheets/rails_admin/theme/activo/images/icons/delete.png", :alt => t("admin.new.cancel")
             = t("admin.new.cancel")

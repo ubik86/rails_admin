@@ -33,7 +33,7 @@ module RailsAdmin
             extend RailsAdmin::Config::Fields::Groupable
           end
         end
-        
+
         register_instance_option(:css_class) do
           self.class.instance_variable_get("@css_class")
         end
@@ -49,17 +49,13 @@ module RailsAdmin
         register_instance_option(:column_width) do
           self.class.instance_variable_get("@column_width")
         end
-
+        
         register_instance_option(:read_only) do
-          role = bindings[:view].controller.send(:_attr_accessible_role)
-          klass = bindings[:object].class
-          whitelist = klass.accessible_attributes(role).map(&:to_s)
-          blacklist = klass.protected_attributes(role).map(&:to_s)
-          self.method_name.to_s.in?(blacklist) || (whitelist.any? ? !self.method_name.to_s.in?(whitelist) : false)
+          false
         end
-
+        
         register_instance_option(:truncated?) do
-          ActiveSupport::Deprecation.warn("'#{self.name}.truncated?' is deprecated, use '#{self.name}.pretty_value' instead", caller)
+          true
         end
 
         register_instance_option(:sortable) do
@@ -102,9 +98,9 @@ module RailsAdmin
                 @table_name, column_name = f.split '.'
                 f = column_name.to_sym
               end
-
+              
               field_name = f.is_a?(Hash) ? f.values.first : f
-
+              
               abstract_model = if f.is_a?(Hash) && (f.keys.first.is_a?(Class) || f.keys.first.is_a?(String)) #  { Model => :attribute } || { "Model" => :attribute }
                 AbstractModel.new(f.keys.first)
               elsif f.is_a?(Hash)                                            #  { :table_name => :attribute }
@@ -113,7 +109,7 @@ module RailsAdmin
               else                                                           #  :attribute
                 (self.association? ? self.associated_model_config.abstract_model : self.abstract_model)
               end
-
+              
               property = abstract_model.properties.find{ |p| p[:name] == field_name }
               raise ":#{field_name} attribute not found/not accessible on table :#{abstract_model.model.table_name}. \nPlease check '#{self.abstract_model.pretty_name}' configuration for :#{self.name} attribute." unless property
               { :column => "#{@table_name || abstract_model.model.table_name}.#{property[:name]}", :type => property[:type] }
@@ -122,19 +118,17 @@ module RailsAdmin
         end
 
         register_instance_option(:formatted_value) do
-          value.to_s
+          unless (output = value).nil?
+            output
+          else
+            "".html_safe
+          end
         end
-
-        # output for pretty printing (show, list)
+        
+        # output for pretty printing (show, list, etc)
         register_instance_option(:pretty_value) do
           formatted_value
         end
-        
-        # output for printing in export view (developers beware: no bindings[:view] and no data!)
-        register_instance_option(:export_value) do
-          pretty_value
-        end
-
 
         # Accessor for field's help text displayed below input field.
         register_instance_option(:help) do
@@ -175,12 +169,17 @@ module RailsAdmin
           bindings[:view].render :partial => partial.to_s, :locals => {:field => self, :form => bindings[:form] }
         end
 
-        # Accessor for whether this is field is mandatory.
+        # Accessor for whether this is field is mandatory.  This is
+        # based on two factors: whether the field is nullable at the
+        # database level, and whether it has an ActiveRecord validation
+        # that requires its presence.
         #
         # @see RailsAdmin::AbstractModel.properties
         register_instance_option(:required?) do
-          @required ||= !!abstract_model.model.validators_on(name).find do |v|
-            v.is_a?(ActiveModel::Validations::PresenceValidator) || !v.options[:allow_nil]
+          @required ||= begin
+            validators = abstract_model.model.validators_on(@name)
+            required_by_validator = validators.find{|v| (v.class == ActiveModel::Validations::PresenceValidator) || (v.class == ActiveModel::Validations::NumericalityValidator && v.options[:allow_nil]==false)} && true || false
+            properties && !properties[:nullable?] || required_by_validator
           end
         end
 
@@ -207,7 +206,7 @@ module RailsAdmin
 
         # Reader whether the bound object has validation errors
         def has_errors?
-          errors.present?
+          !(bindings[:object].errors[name].nil? || bindings[:object].errors[name].empty?)
         end
 
         # Reader whether field is optional.
@@ -233,6 +232,18 @@ module RailsAdmin
         # @see RailsAdmin::Config::Fields::Base.optional
         def optional=(state)
           optional(state)
+        end
+
+        # Legacy support
+        def to_hash
+          {
+            :name => name,
+            :pretty_name => label,
+            :type => type,
+            :length => length,
+            :nullable? => required?,
+            :serial? => serial?
+          }
         end
 
         # Reader for field's type

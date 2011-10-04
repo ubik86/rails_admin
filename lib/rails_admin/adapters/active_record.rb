@@ -14,23 +14,25 @@ module RailsAdmin
         # Added here for backward compatibility after a refactoring, but it does belong to ActiveRecord IMO.
         # Support is hackish at best. Atomicity is respected for creation, but not while updating.
         # It means a failed validation at update on the parent object could still modify target belongs_to foreign ids.
-        #
-        #
+        # 
+        # 
         abstract_model.model.reflect_on_all_associations.select{|assoc| assoc.macro.to_s == 'has_one'}.each do |association|
           abstract_model.model.send(:define_method, "#{association.name}_id") do
             self.send(association.name).try(:id)
           end
           abstract_model.model.send(:define_method, "#{association.name}_id=") do |id|
+            association.klass.update_all({ association.primary_key_name => nil }, { association.primary_key_name => self.id }) if self.id
             self.send(association.name.to_s + '=', associated = (id.blank? ? nil : association.klass.find_by_id(id)))
           end
         end
       end
 
       def self.polymorphic_parents(name)
+        
         @@polymorphic_parents ||= {}.tap do |hash|
           RailsAdmin::AbstractModel.all_models.each do |klass|
             klass.reflect_on_all_associations.select{|r| r.options[:as] }.each do |reflection|
-              (hash[reflection.options[:as].to_sym] ||= []) << klass
+              (hash[reflection.options[:as]] ||= []) << klass
             end
           end
         end
@@ -38,7 +40,7 @@ module RailsAdmin
       end
 
       def get(id)
-        if object = model.where(model.primary_key => id).first
+        if object = model.find_by_id(id)
           RailsAdmin::AbstractObject.new object
         else
           nil
@@ -46,19 +48,23 @@ module RailsAdmin
       end
 
       def get_bulk(ids, scope = nil)
-        (scope || model).where(model.primary_key => ids)
+        scope ||= model
+        scope.find_all_by_id(ids)
       end
 
       def count(options = {}, scope = nil)
-        (scope || model).count(options.except(:sort, :sort_reverse))
+        scope ||= model
+        scope.count(options.except(:sort, :sort_reverse))
       end
 
       def first(options = {}, scope = nil)
-        (scope || model).reorder(extract_ordering!(options)).first(options)
+        scope ||= model
+        scope.first(merge_order(options))
       end
-      
+
       def all(options = {}, scope = nil)
-        (scope || model).reorder(extract_ordering!(options)).all(options)
+        scope ||= model
+        scope.all(merge_order(options))
       end
 
       def paginated(options = {}, scope = nil)
@@ -85,7 +91,7 @@ module RailsAdmin
 
       def destroy(ids, scope = nil)
         scope ||= model
-        scope.destroy_all(model.primary_key => ids)
+        scope.destroy_all(:id => ids)
       end
 
       def destroy_all!
@@ -163,26 +169,11 @@ module RailsAdmin
 
       private
 
-      def extract_ordering!(options)
-        @sort ||= options.delete(:sort) || model.primary_key
+      def merge_order(options)
+        @sort ||= options.delete(:sort) || "id"
         @sort = (@sort.to_s.include?('.') ? @sort : "#{model.table_name}.#{@sort}")
         @sort_order ||= options.delete(:sort_reverse) ? "asc" : "desc"
-        "#{@sort} #{@sort_order}"
-      end
-
-      def association_options(association)
-        if association.options[:polymorphic]
-          {
-            :polymorphic => true,
-            :foreign_type => association.options[:foreign_type] || "#{association.name}_type"
-          }
-        elsif association.options[:as]
-          {
-            :as => association.options[:as]
-          }
-        else
-          {}
-        end
+        options.merge(:order => "#{@sort} #{@sort_order}")
       end
 
       def association_parent_model_lookup(association)
@@ -199,11 +190,9 @@ module RailsAdmin
           raise "Unknown association type: #{association.macro.inspect}"
         end
       end
-
+      
       def association_foreign_type_lookup(association)
-        if association.options[:polymorphic]
-          association.options[:foreign_type].try(:to_sym) || :"#{association.name}_type"
-        end
+        association.options[:foreign_type].try :to_sym
       end
 
       def association_as_lookup(association)
@@ -217,11 +206,11 @@ module RailsAdmin
       def association_parent_key_lookup(association)
         [:id]
       end
-
+      
       def association_inverse_of_lookup(association)
         association.options[:inverse_of].try :to_sym
       end
-
+      
       def association_read_only_lookup(association)
         association.options[:readonly]
       end
@@ -242,7 +231,7 @@ module RailsAdmin
         when :belongs_to
           association.options[:foreign_key].try(:to_sym) || "#{association.name}_id".to_sym
         when :has_one, :has_many, :has_and_belongs_to_many
-          association.foreign_key.to_sym
+          association.primary_key_name.to_sym
         else
           raise "Unknown association type: #{association.macro.inspect}"
         end

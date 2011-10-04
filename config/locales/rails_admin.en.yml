@@ -15,7 +15,6 @@ en:
       add_new: "Add new"
       show: "Show"
       ago: "ago"
-      navigation: "Navigation"
     history:
       name: "History"
       page_name: "History for %{name}"
